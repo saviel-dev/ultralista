@@ -1,0 +1,100 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bs-body-bg);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+    padding-bottom: 60px;
+}
+
+/* Premium custom shadows & shapes */
+.premium-card {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .premium-card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    background-color: #1e1e24;
+}
+
+/* Seamless editable input title */
+.editable-title {
+    font-weight: 800;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: all 0.2s ease;
+    width: 100%;
+    background: transparent;
+}
+
+.editable-title:hover {
+    border-color: var(--bs-primary-border-subtle);
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.editable-title:focus {
+    outline: none;
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.02);
+    box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Shopping List Row Animations & Styles */
+.list-item-row {
+    transition: all 0.2s ease;
+    border-radius: 12px !important;
+    margin-bottom: 8px;
+    border: 1px solid var(--bs-border-color-translucent);
+}
+
+.list-item-row:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    background-color: rgba(var(--bs-primary-rgb), 0.01);
+}
+
+.list-item-row.checked {
+    opacity: 0.65;
+    background-color: var(--bs-tertiary-bg) !important;
+}
+
+.list-item-row.checked .item-name {
+    text-decoration: line-through;
+}
+
+/* Floating total display */
+.total-badge-container {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    color: white;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+}
+
+/* Progress Bar height */
+.progress {
+    height: 8px;
+    border-radius: 10px;
+}
+
+/* Toast feedback */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+/* Remove arrows from number inputs for a cleaner look */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
