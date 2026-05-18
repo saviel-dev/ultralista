@@ -73,47 +73,42 @@
         </header>
 
         <!-- Controls & Configuration Toolbar -->
-        <div class="card premium-card p-3 mb-4">
-            <div class="row g-3 align-items-center justify-content-between">
-                <!-- Exchange Rate Helper (Ves/USD toggle) -->
-                <div class="col-sm-6 col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-body-secondary">
-                            <i class="fa-solid fa-dollar-sign text-success me-1"></i>
-                            <span class="d-none d-sm-inline">Tasa de cambio:</span>
-                            <span class="d-inline d-sm-none">Tasa:</span>
-                        </span>
-                        <input type="number" id="exchange-rate-input" class="form-control bg-body-tertiary cursor-pointer px-2" readonly
-                            placeholder="Cargando..." onclick="openEditRateModal()" title="Click para editar manualmente">
-                        <button class="btn btn-outline-primary px-3" type="button" onclick="openEditRateModal()"
-                            title="Editar Tasa Manualmente">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary px-3" type="button" onclick="tasaDeCambio()"
-                            title="Actualizar Tasa BCV">
-                            <i class="fa-solid fa-rotate-right"></i>
-                        </button>
-                    </div>
+        <div class="card premium-card px-3 py-2 mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <!-- Exchange Rate -->
+                <div class="input-group input-group-sm" style="max-width: 260px; min-width: 180px;">
+                    <span class="input-group-text bg-body-secondary fw-semibold">
+                        <i class="fa-solid fa-dollar-sign text-success me-1"></i> Tasa:
+                    </span>
+                    <input type="number" id="exchange-rate-input" class="form-control bg-body-tertiary cursor-pointer px-2" readonly
+                        placeholder="Cargando..." onclick="openEditRateModal()" title="Click para editar manualmente">
+                    <button class="btn btn-outline-primary" type="button" onclick="openEditRateModal()"
+                        title="Editar Tasa Manualmente">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" onclick="tasaDeCambio()"
+                        title="Actualizar Tasa BCV">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
                 </div>
 
                 <!-- Utility actions -->
-                <div class="col-sm-6 col-md-7 d-flex gap-2 justify-content-sm-end mt-3 mt-sm-0">
-                    <div class="btn-group flex-grow-1 flex-sm-grow-0" role="group">
-                        <button type="button" class="btn btn-outline-secondary py-2" onclick="filterList('all')"
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('all')"
                             id="btn-filter-all" title="Todos">
                             <i class="fa-solid fa-list"></i> <span class="d-none d-sm-inline ms-1">Todos</span>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary py-2" onclick="filterList('pending')"
+                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('pending')"
                             id="btn-filter-pending" title="Pendientes">
                             <i class="fa-regular fa-clock"></i> <span class="d-none d-sm-inline ms-1">Pendientes</span>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary py-2" onclick="filterList('completed')"
+                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('completed')"
                             id="btn-filter-completed" title="Comprados">
-                            <i class="fa-solid fa-circle-check"></i> <span
-                                class="d-none d-sm-inline ms-1">Comprados</span>
+                            <i class="fa-solid fa-circle-check"></i> <span class="d-none d-sm-inline ms-1">Comprados</span>
                         </button>
                     </div>
-                    <button class="btn btn-outline-danger flex-shrink-0 px-3 py-2" onclick="confirmClearAll()"
+                    <button class="btn btn-sm btn-outline-danger px-3" onclick="confirmClearAll()"
                         title="Limpiar lista completa">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
