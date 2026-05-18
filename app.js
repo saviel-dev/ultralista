@@ -22,6 +22,7 @@ let fullTotalModal;
 let editRateModal;
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
+let editingItemId = null;
 
 // On window load
 window.onload = function () {
@@ -143,6 +144,15 @@ function renderList() {
                     </div>
                 </div>
                 
+                <!-- Unified Edit Button (Pen Icon) -->
+                <button class="btn btn-sm text-primary opacity-75 border-0 p-1 ms-2 flex-shrink-0" 
+                    onmouseover="this.classList.remove('opacity-75')"
+                    onmouseout="this.classList.add('opacity-75')"
+                    onclick="openEditItemModal(${item.id})" 
+                    title="Editar artículo"
+                    aria-label="Editar">
+                    <i class="fa-solid fa-pen fs-5"></i>
+                </button>
                 <!-- Unified Delete Button (Trash Icon) -->
                 <button class="btn btn-sm text-danger opacity-75 border-0 p-1 ms-2 flex-shrink-0" 
                     onmouseover="this.classList.remove('opacity-75')"
@@ -205,8 +215,31 @@ function setPage(page) {
 }
 
 function openAddItemModal() {
+    editingItemId = null;
+    document.getElementById('addItemModalLabel').textContent = "Añadir Nuevo Artículo";
+    document.querySelector('#addItemModal .modal-footer .btn-primary').textContent = "Guardar Artículo";
+    
     document.getElementById('add-item-form').reset();
     document.getElementById('modal-item-quantity').value = 1;
+    addItemModal.show();
+    setTimeout(() => {
+        document.getElementById('modal-item-name').focus();
+    }, 400);
+}
+
+function openEditItemModal(id) {
+    const item = state.items.find(i => i.id === id);
+    if (!item) return;
+    
+    editingItemId = id;
+    
+    document.getElementById('addItemModalLabel').textContent = "Editar Artículo";
+    document.querySelector('#addItemModal .modal-footer .btn-primary').textContent = "Actualizar Artículo";
+    
+    document.getElementById('modal-item-name').value = item.name;
+    document.getElementById('modal-item-quantity').value = item.quantity;
+    document.getElementById('modal-item-price').value = item.price !== null ? item.price : '';
+    
     addItemModal.show();
     setTimeout(() => {
         document.getElementById('modal-item-name').focus();
@@ -228,22 +261,33 @@ function submitNewItem() {
     // Permitimos precio vacío o 0
     const price = priceInput.value ? parseFloat(priceInput.value) : null;
 
-    state.items.push({
-        id: Date.now(),
-        name: name,
-        price: price,
-        quantity: quantity,
-        checked: false
-    });
+    if (editingItemId !== null) {
+        const itemIndex = state.items.findIndex(i => i.id === editingItemId);
+        if (itemIndex !== -1) {
+            state.items[itemIndex].name = name;
+            state.items[itemIndex].quantity = quantity;
+            state.items[itemIndex].price = price;
+        }
+        showToast("Artículo actualizado");
+        editingItemId = null;
+    } else {
+        state.items.push({
+            id: Date.now(),
+            name: name,
+            price: price,
+            quantity: quantity,
+            checked: false
+        });
+        showToast("Artículo añadido");
+        
+        // Jump to the last page when a new item is added
+        currentPage = Math.ceil(state.items.length / ITEMS_PER_PAGE);
+    }
 
     saveToLocalStorage();
     
-    // Jump to the last page when a new item is added
-    currentPage = Math.ceil(state.items.length / ITEMS_PER_PAGE);
-    
     renderList();
     addItemModal.hide();
-    showToast("Artículo añadido");
 }
 
 // Toggle Buy Status

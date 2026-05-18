@@ -74,43 +74,44 @@
 
         <!-- Controls & Configuration Toolbar -->
         <div class="card premium-card px-3 py-2 mb-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between gap-2">
                 <!-- Exchange Rate -->
-                <div class="input-group input-group-sm" style="max-width: 260px; min-width: 180px;">
+                <div class="mt-2 input-group input-group-sm" style="max-width: 260px; min-width: 180px;">
                     <span class="input-group-text bg-body-secondary fw-semibold">
                         <i class="fa-solid fa-dollar-sign text-success me-1"></i> Tasa:
                     </span>
-                    <input type="number" id="exchange-rate-input" class="form-control bg-body-tertiary cursor-pointer px-2" readonly
-                        placeholder="Cargando..." onclick="openEditRateModal()" title="Click para editar manualmente">
+                    <input type="number" id="exchange-rate-input"
+                        class="form-control bg-body-tertiary cursor-pointer px-2" readonly placeholder="Cargando..."
+                        onclick="openEditRateModal()" title="Click para editar manualmente">
                     <button class="btn btn-outline-primary" type="button" onclick="openEditRateModal()"
                         title="Editar Tasa Manualmente">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button class="btn btn-outline-secondary" type="button" onclick="tasaDeCambio()"
+                    <button class="btn btn-outline-success" type="button" onclick="tasaDeCambio()"
                         title="Actualizar Tasa BCV">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
 
                 <!-- Utility actions -->
-                <div class="d-flex gap-2 align-items-center">
+                <div class="mt-3 d-flex gap-2 align-items-center">
                     <div class="btn-group btn-group-sm" role="group">
                         <button type="button" class="btn btn-outline-secondary" onclick="filterList('all')"
                             id="btn-filter-all" title="Todos">
-                            <i class="fa-solid fa-list"></i> <span class="d-none d-sm-inline ms-1">Todos</span>
+                            <i class="fa-solid fa-list"></i> <span class="ms-1">Todos</span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="filterList('pending')"
                             id="btn-filter-pending" title="Pendientes">
-                            <i class="fa-regular fa-clock"></i> <span class="d-none d-sm-inline ms-1">Pendientes</span>
+                            <i class="fa-regular fa-clock"></i> <span class="ms-1">Pendientes</span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="filterList('completed')"
                             id="btn-filter-completed" title="Comprados">
-                            <i class="fa-solid fa-circle-check"></i> <span class="d-none d-sm-inline ms-1">Comprados</span>
+                            <i class="fa-solid fa-circle-check"></i> <span class="ms-1">Comprados</span>
                         </button>
                     </div>
                     <button class="btn btn-sm btn-outline-danger px-3" onclick="confirmClearAll()"
                         title="Limpiar lista completa">
-                        <i class="fa-regular fa-trash-can"></i>
+                        <i class="fa-regular fa-trash-can"></i> <span class="ms-1">Limpiar</span>
                     </button>
                 </div>
             </div>
@@ -225,8 +226,10 @@
                 <div class="modal-body pb-4 px-4">
                     <form id="edit-rate-form" onsubmit="event.preventDefault(); submitCustomRate();">
                         <div class="mb-3">
-                            <label for="custom-rate-input" class="form-label text-secondary fw-semibold">Tasa (Bs por $)</label>
-                            <input type="number" class="form-control" id="custom-rate-input" placeholder="Ej. 36.5" min="0.01" step="any" required>
+                            <label for="custom-rate-input" class="form-label text-secondary fw-semibold">Tasa (Bs por
+                                $)</label>
+                            <input type="number" class="form-control" id="custom-rate-input" placeholder="Ej. 36.5"
+                                min="0.01" step="any" required>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Guardar Tasa</button>
                     </form>
