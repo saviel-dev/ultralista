@@ -1,6 +1,6 @@
 # Súper Lista de Compras 🛒
 
-![Vista previa de la aplicación](assets/preview.png)
+![Vista previa de la aplicación](assets/images/preview.png)
 
 Una aplicación web moderna, responsiva y fácil de usar diseñada para gestionar tus compras de supermercado. Permite calcular el total estimado de los productos pendientes, llevar un control de lo que ya has adquirido y convertir automáticamente los montos de Bolívares (Bs) a Dólares (USD) utilizando la tasa oficial del Banco Central de Venezuela (BCV).
 

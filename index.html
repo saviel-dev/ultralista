@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Súper Lista de Compras</title>
+    <!-- Web Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome Icons -->
@@ -16,13 +18,12 @@
         rel="stylesheet">
     <!-- Animate.css for subtle effects -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-    <div class="container py-4 py-md-5" style="max-width: 800px;">
+    <div class="container py-4 py-md-5 d-flex flex-column flex-grow-1" style="max-width: 800px;">
         <!-- Header Widget -->
         <header class="mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -38,10 +39,11 @@
             <div class="card premium-card bg-body-tertiary p-4 mb-4">
                 <div class="row align-items-center g-3">
                     <div class="col-md-7">
-                        <small class="text-muted d-block text-uppercase tracking-wider fw-bold fs-7 mb-1">Presiona para
-                            editar título</small>
+                        <small class="text-muted d-block text-uppercase tracking-wider fw-bold fs-7 mb-1">Presupuesto de
+                            compras:</small>
                         <input type="text" id="list-title" class="editable-title fs-2 text-primary"
-                            value="Mi Lista de Compras" oninput="saveToLocalStorage()" aria-label="Título de la lista">
+                            placeholder="Click para editar" oninput="saveToLocalStorage()"
+                            aria-label="Título de la lista">
                     </div>
                     <div class="col-md-5 text-md-end">
                         <div class="total-badge-container p-3 text-center text-md-end d-inline-block w-100">
@@ -75,12 +77,20 @@
             <div class="row g-3 align-items-center justify-content-between">
                 <!-- Exchange Rate Helper (Ves/USD toggle) -->
                 <div class="col-sm-6 col-md-5">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-body-secondary"><i
-                                class="fa-solid fa-dollar-sign text-success me-1"></i> Tasa de Cambio (Bs/$)</span>
-                        <input type="number" id="exchange-rate-input" class="form-control bg-body-tertiary" disabled
-                            placeholder="Cargando..." step="0.01" min="0">
-                        <button class="btn btn-outline-secondary" type="button" onclick="tasaDeCambio()" title="Actualizar Tasa BCV">
+                    <div class="input-group">
+                        <span class="input-group-text bg-body-secondary">
+                            <i class="fa-solid fa-dollar-sign text-success me-1"></i>
+                            <span class="d-none d-sm-inline">Tasa de cambio:</span>
+                            <span class="d-inline d-sm-none">Tasa:</span>
+                        </span>
+                        <input type="number" id="exchange-rate-input" class="form-control bg-body-tertiary cursor-pointer px-2" readonly
+                            placeholder="Cargando..." onclick="openEditRateModal()" title="Click para editar manualmente">
+                        <button class="btn btn-outline-primary px-3" type="button" onclick="openEditRateModal()"
+                            title="Editar Tasa Manualmente">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary px-3" type="button" onclick="tasaDeCambio()"
+                            title="Actualizar Tasa BCV">
                             <i class="fa-solid fa-rotate-right"></i>
                         </button>
                     </div>
@@ -88,22 +98,22 @@
 
                 <!-- Utility actions -->
                 <div class="col-sm-6 col-md-7 d-flex gap-2 justify-content-sm-end mt-3 mt-sm-0">
-                    <div class="btn-group btn-group-sm flex-grow-1 flex-sm-grow-0" role="group">
-                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('all')"
+                    <div class="btn-group flex-grow-1 flex-sm-grow-0" role="group">
+                        <button type="button" class="btn btn-outline-secondary py-2" onclick="filterList('all')"
                             id="btn-filter-all" title="Todos">
                             <i class="fa-solid fa-list"></i> <span class="d-none d-sm-inline ms-1">Todos</span>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('pending')"
+                        <button type="button" class="btn btn-outline-secondary py-2" onclick="filterList('pending')"
                             id="btn-filter-pending" title="Pendientes">
                             <i class="fa-regular fa-clock"></i> <span class="d-none d-sm-inline ms-1">Pendientes</span>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('completed')"
+                        <button type="button" class="btn btn-outline-secondary py-2" onclick="filterList('completed')"
                             id="btn-filter-completed" title="Comprados">
                             <i class="fa-solid fa-circle-check"></i> <span
                                 class="d-none d-sm-inline ms-1">Comprados</span>
                         </button>
                     </div>
-                    <button class="btn btn-sm btn-outline-danger flex-shrink-0" onclick="confirmClearAll()"
+                    <button class="btn btn-outline-danger flex-shrink-0 px-3 py-2" onclick="confirmClearAll()"
                         title="Limpiar lista completa">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
@@ -115,8 +125,8 @@
         <main>
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
                 <h5 class="fw-bold mb-0 text-secondary-emphasis">Artículos</h5>
-                <span class="text-muted small"><i class="fa-solid fa-keyboard me-1"></i> <kbd>Enter</kbd> salta de campo
-                    o abre un elemento rápidamente</span>
+                <span class="text-muted small d-none d-sm-inline"><i class="fa-solid fa-keyboard me-1"></i>
+                    <kbd>F1</kbd> para añadir un artículo rápidamente</span>
             </div>
 
             <!-- List of items wrapper -->
@@ -124,11 +134,11 @@
                 <!-- Dynamic Items will be rendered here -->
             </div>
 
-            <!-- Add Element Button Card (Fallback) -->
+            <!-- Add Element Button Card -->
             <div class="text-center mt-3">
-                <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="addNewItem(true)">
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openAddItemModal()">
                     <i class="fa-solid fa-plus me-2"></i>Añadir Artículo <span
-                        class="badge bg-white text-primary ms-1">F1</span>
+                        class="badge bg-white text-primary ms-1 d-none d-sm-inline-block">F1</span>
                 </button>
             </div>
         </main>
@@ -138,12 +148,94 @@
     <div class="toast-container">
         <div id="feedback-toast" class="toast align-items-center text-bg-dark border-0" role="alert"
             aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body" id="toast-message">
+            <div class="d-flex align-items-center w-100">
+                <div class="toast-body flex-grow-1" id="toast-message">
                     Cambios guardados.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                <div id="toast-action" class="me-2 d-none">
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3"
+                        id="toast-undo-btn">Deshacer</button>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2" data-bs-dismiss="toast"
                     aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="addItemModalLabel">Añadir Nuevo Artículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-item-form" onsubmit="event.preventDefault(); submitNewItem();">
+                        <div class="mb-3">
+                            <label for="modal-item-name" class="form-label text-secondary fw-semibold">Nombre del
+                                producto</label>
+                            <input type="text" class="form-control" id="modal-item-name" placeholder="Ej. Harina Pan"
+                                required>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="modal-item-quantity"
+                                    class="form-label text-secondary fw-semibold">Cantidad</label>
+                                <input type="number" class="form-control" id="modal-item-quantity" value="1" min="1"
+                                    step="1" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="modal-item-price" class="form-label text-secondary fw-semibold">Precio
+                                    Unitario (Bs)</label>
+                                <input type="number" class="form-control" id="modal-item-price" placeholder="0.00"
+                                    min="0" step="any">
+                            </div>
+                        </div>
+                        <button type="submit" class="d-none"></button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitNewItem()">Guardar Artículo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Total Modal -->
+    <div class="modal fade" id="fullTotalModal" tabindex="-1" aria-labelledby="fullTotalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content premium-card">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center pb-4 px-4">
+                    <h6 class="text-uppercase text-muted tracking-wider fw-bold mb-3">Total Estimado Completo</h6>
+                    <h3 class="fw-bold text-primary mb-2 text-break" id="modal-total-bs">Bs. 0,00</h3>
+                    <p class="text-muted small mb-0 text-break" id="modal-total-usd">Equivalente: $0.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Rate Modal -->
+    <div class="modal fade" id="editRateModal" tabindex="-1" aria-labelledby="editRateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content premium-card">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title fw-bold" id="editRateModalLabel">Editar Tasa de Cambio</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pb-4 px-4">
+                    <form id="edit-rate-form" onsubmit="event.preventDefault(); submitCustomRate();">
+                        <div class="mb-3">
+                            <label for="custom-rate-input" class="form-label text-secondary fw-semibold">Tasa (Bs por $)</label>
+                            <input type="number" class="form-control" id="custom-rate-input" placeholder="Ej. 36.5" min="0.01" step="any" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Guardar Tasa</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

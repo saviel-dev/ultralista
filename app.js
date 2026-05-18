@@ -1,6 +1,6 @@
 // Application State
 let state = {
-    title: "Mi Lista de Compras",
+    title: "",
     items: [],
     exchangeRate: 0,
     activeFilter: 'all' // 'all', 'pending', 'completed'
@@ -17,10 +17,18 @@ const progressBar = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
 const progressPercentage = document.getElementById('progress-percentage');
 let clearAllModal;
+let addItemModal;
+let fullTotalModal;
+let editRateModal;
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
 
 // On window load
 window.onload = function () {
     clearAllModal = new bootstrap.Modal(document.getElementById('clearAllModal'));
+    addItemModal = new bootstrap.Modal(document.getElementById('addItemModal'));
+    fullTotalModal = new bootstrap.Modal(document.getElementById('fullTotalModal'));
+    editRateModal = new bootstrap.Modal(document.getElementById('editRateModal'));
     loadFromLocalStorage();
     applySavedTheme();
     renderList();
@@ -32,7 +40,7 @@ window.onload = function () {
     document.addEventListener('keydown', function (e) {
         if (e.key === 'F1') {
             e.preventDefault();
-            addNewItem(true);
+            openAddItemModal();
         }
     });
 };
@@ -43,7 +51,7 @@ function loadFromLocalStorage() {
     if (savedState) {
         try {
             const parsed = JSON.parse(savedState);
-            state.title = parsed.title || "Mi Lista de Compras";
+            state.title = parsed.title || "";
             state.items = parsed.items || [];
             state.exchangeRate = parsed.exchangeRate || 0;
 
@@ -55,17 +63,6 @@ function loadFromLocalStorage() {
         } catch (e) {
             console.error("Error cargando LocalStorage", e);
         }
-    }
-
-    // If empty, initialize with an empty item row with quantity
-    if (state.items.length === 0) {
-        state.items.push({
-            id: Date.now(),
-            name: "",
-            price: null,
-            quantity: 1,
-            checked: false
-        });
     }
 }
 
@@ -114,7 +111,15 @@ function renderList() {
         return;
     }
 
-    filteredItems.forEach((item, index) => {
+    const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedItems = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    paginatedItems.forEach((item, index) => {
         // Find actual global index in the state array (important for state mutation)
         const globalIndex = state.items.findIndex(i => i.id === item.id);
 
@@ -123,85 +128,46 @@ function renderList() {
         row.style.animationDelay = `${index * 0.03}s`;
         row.setAttribute('data-id', item.id);
 
-        // Reverted to traditional Bootstrap input-group layout
+        // Read-only list layout
         row.innerHTML = `
-            <div class="row g-2 align-items-center m-0">
-                <!-- Checkbox & Name (Full width on mobile, sharing space on md) -->
-                <div class="col-12 col-md-5 d-flex align-items-center">
-                    <div class="form-check m-0 fs-5 me-2">
+            <div class="d-flex align-items-center justify-content-between mb-2 p-1">
+                <div class="d-flex align-items-center overflow-hidden flex-grow-1">
+                    <div class="form-check m-0 fs-5 me-3 flex-shrink-0">
                         <input class="form-check-input cursor-pointer m-0" type="checkbox" 
                             ${item.checked ? 'checked' : ''} 
                             onchange="toggleCheck(${item.id})"
                             aria-label="Marcar como comprado">
                     </div>
-                    
-                    <input type="text" 
-                        id="name-${globalIndex}" 
-                        class="form-control border-0 bg-transparent fw-semibold shadow-none item-name px-0 flex-grow-1" 
-                        placeholder="Nombre del producto" 
-                        value="${escapeHtml(item.name)}" 
-                        oninput="updateItem(${globalIndex}, 'name', this.value)"
-                        onkeydown="handleKeyDown(event, ${globalIndex}, 'name')"
-                        aria-label="Nombre del producto">
-                        
-                    <!-- Mobile Delete Button -->
-                    <button class="btn btn-sm text-danger border-0 d-md-none ms-2 px-2" 
-                        onclick="removeItem(${item.id})" 
-                        title="Eliminar artículo"
-                        aria-label="Eliminar">
-                        <i class="fa-solid fa-xmark fs-5"></i>
-                    </button>
-                </div>
-                
-                <!-- Quantity & Price Fields -->
-                <div class="col-12 col-md-7">
-                    <div class="row g-2 align-items-center">
-                        <!-- Quantity -->
-                        <div class="col-6 col-md-5">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-boxes-stacked text-muted"></i></span>
-                                <input type="number" 
-                                    id="quantity-${globalIndex}" 
-                                    class="form-control text-center fw-bold" 
-                                    placeholder="1" min="1" step="1"
-                                    value="${item.quantity || 1}" 
-                                    oninput="updateItem(${globalIndex}, 'quantity', this.value)"
-                                    onkeydown="handleKeyDown(event, ${globalIndex}, 'quantity')"
-                                    aria-label="Cantidad">
-                            </div>
-                        </div>
-
-                        <!-- Price -->
-                        <div class="col-6 col-md-5">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-body-tertiary fw-bold">Bs.</span>
-                                <input type="number" 
-                                    id="price-${globalIndex}"
-                                    class="form-control text-end fw-bold text-success" 
-                                    placeholder="0,00" step="any" min="0"
-                                    value="${item.price !== null ? item.price : ''}" 
-                                    oninput="updateItem(${globalIndex}, 'price', this.value)"
-                                    onkeydown="handleKeyDown(event, ${globalIndex}, 'price')"
-                                    aria-label="Precio unitario en Bolívares">
-                            </div>
-                        </div>
-
-                        <!-- Desktop Delete Button -->
-                        <div class="col-md-2 d-none d-md-block text-end">
-                            <button class="btn btn-sm btn-outline-danger border-0" 
-                                onclick="removeItem(${item.id})" 
-                                title="Eliminar artículo"
-                                aria-label="Eliminar">
-                                <i class="fa-solid fa-xmark fs-5"></i>
-                            </button>
-                        </div>
+                    <div class="flex-grow-1 fw-bold item-name fs-5 text-truncate" title="${escapeHtml(item.name)}">
+                        ${escapeHtml(item.name) || '<em>Sin nombre</em>'}
                     </div>
                 </div>
                 
-                <!-- Subtotal Display -->
-                <div class="col-12 d-none d-md-block text-end mt-1">
-                    <span class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Subtotal:</span>
-                    <span class="fw-bold ms-1" id="subtotal-${globalIndex}">Bs. ${formatCurrency((item.price || 0) * (item.quantity || 1))}</span>
+                <!-- Unified Delete Button (Trash Icon) -->
+                <button class="btn btn-sm text-danger opacity-75 border-0 p-1 ms-2 flex-shrink-0" 
+                    onmouseover="this.classList.remove('opacity-75')"
+                    onmouseout="this.classList.add('opacity-75')"
+                    onclick="removeItem(${item.id})" 
+                    title="Eliminar artículo"
+                    aria-label="Eliminar">
+                    <i class="fa-regular fa-trash-can fs-5"></i>
+                </button>
+            </div>
+            
+            <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 pb-1" style="padding-left: 2.75rem; padding-right: 0.5rem;">
+                <div class="d-flex flex-wrap gap-2">
+                    <!-- Quantity Badge -->
+                    <div class="bg-body-tertiary px-2 py-1 rounded-pill text-nowrap border d-flex align-items-center">
+                        <small class="text-muted me-1"><i class="fa-solid fa-boxes-stacked"></i></small>
+                        <span class="fw-bold" style="font-size: 0.85rem;">${item.quantity || 1}</span>
+                    </div>
+
+                    <!-- Price Badge -->
+                    <div class="bg-body-tertiary px-2 py-1 rounded-pill text-nowrap border d-flex align-items-center">
+                        <small class="text-muted me-1">Bs.</small>
+                        <span class="fw-bold text-success" style="font-size: 0.85rem;">${item.price !== null ? formatCurrency(item.price) : '0,00'}</span>
+                    </div>
+                </div>
                 </div>
             </div>
         `;
@@ -209,101 +175,75 @@ function renderList() {
         listContainer.appendChild(row);
     });
 
+    if (totalPages > 1) {
+        const paginationWrapper = document.createElement('div');
+        paginationWrapper.className = "d-flex justify-content-center align-items-center gap-3 mt-4 mb-2 animate__animated animate__fadeIn";
+        
+        const prevDisabled = currentPage === 1 ? 'disabled' : '';
+        const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+        
+        paginationWrapper.innerHTML = `
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" ${prevDisabled} onclick="setPage(${currentPage - 1})">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="text-muted small fw-semibold">Página ${currentPage} de ${totalPages}</span>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" ${nextDisabled} onclick="setPage(${currentPage + 1})">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        `;
+        
+        listContainer.appendChild(paginationWrapper);
+    }
+
     calculateTotals();
 }
 
-// Navigation and Fluid row creation logic using keyboard
-function handleKeyDown(event, index, field) {
-    if (event.key === 'Enter') {
-        event.preventDefault(); // Stop submitting form actions
-
-        if (field === 'name') {
-            // Focus the quantity field on the SAME row
-            const quantityField = document.getElementById(`quantity-${index}`);
-            if (quantityField) {
-                quantityField.focus();
-                quantityField.select(); // auto highlight
-            }
-        } else if (field === 'quantity') {
-            // Focus the price field on the SAME row
-            const priceField = document.getElementById(`price-${index}`);
-            if (priceField) {
-                priceField.focus();
-                priceField.select(); // auto highlight
-            }
-        } else if (field === 'price') {
-            // If we are at the very last element of the list, add a new one
-            if (index === state.items.length - 1) {
-                addNewItem(false); // Add internally
-
-                // Wait for render to finish, then focus the new Name field
-                setTimeout(() => {
-                    const newNameField = document.getElementById(`name-${state.items.length - 1}`);
-                    if (newNameField) {
-                        newNameField.focus();
-                        newNameField.select();
-                    }
-                }, 50);
-            } else {
-                // If there are more elements below, focus the next row's name field
-                const nextNameField = document.getElementById(`name-${index + 1}`);
-                if (nextNameField) {
-                    nextNameField.focus();
-                    nextNameField.select();
-                }
-            }
-        }
-    }
+function setPage(page) {
+    currentPage = page;
+    renderList();
+    document.getElementById('shopping-list-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Add blank product item to state with default quantity of 1
-function addNewItem(shouldFocus = false) {
-    const newItemId = Date.now();
+function openAddItemModal() {
+    document.getElementById('add-item-form').reset();
+    document.getElementById('modal-item-quantity').value = 1;
+    addItemModal.show();
+    setTimeout(() => {
+        document.getElementById('modal-item-name').focus();
+    }, 400);
+}
+
+function submitNewItem() {
+    const nameInput = document.getElementById('modal-item-name');
+    const qtyInput = document.getElementById('modal-item-quantity');
+    const priceInput = document.getElementById('modal-item-price');
+
+    const name = nameInput.value.trim();
+    if (!name) {
+        nameInput.focus();
+        return; // Validacion simple
+    }
+
+    const quantity = parseInt(qtyInput.value) || 1;
+    // Permitimos precio vacío o 0
+    const price = priceInput.value ? parseFloat(priceInput.value) : null;
+
     state.items.push({
-        id: newItemId,
-        name: "",
-        price: null,
-        quantity: 1,
+        id: Date.now(),
+        name: name,
+        price: price,
+        quantity: quantity,
         checked: false
     });
 
     saveToLocalStorage();
+    
+    // Jump to the last page when a new item is added
+    currentPage = Math.ceil(state.items.length / ITEMS_PER_PAGE);
+    
     renderList();
-
-    if (shouldFocus) {
-        setTimeout(() => {
-            const lastIndex = state.items.length - 1;
-            const newNameField = document.getElementById(`name-${lastIndex}`);
-            if (newNameField) {
-                newNameField.focus();
-            }
-        }, 50);
-    }
-}
-
-// Update single key values inside state
-function updateItem(index, key, value) {
-    if (key === 'price') {
-        // Parse number safely
-        const numValue = value === '' ? null : parseFloat(value);
-        state.items[index].price = numValue;
-    } else if (key === 'quantity') {
-        const intValue = value === '' ? 1 : parseInt(value);
-        state.items[index].quantity = !isNaN(intValue) && intValue > 0 ? intValue : 1;
-    } else {
-        state.items[index].name = value;
-    }
-    saveToLocalStorage();
-
-    // Dynamic Subtotal display update directly in the DOM for fast responsiveness
-    const subtotalLabel = document.getElementById(`subtotal-${index}`);
-    if (subtotalLabel) {
-        const price = state.items[index].price || 0;
-        const quantity = state.items[index].quantity || 1;
-        subtotalLabel.textContent = `Bs. ${formatCurrency(price * quantity)}`;
-    }
-
-    calculateTotals(); // quick reactive total calculation
+    addItemModal.hide();
+    showToast("Artículo añadido");
 }
 
 // Toggle Buy Status
@@ -316,24 +256,40 @@ function toggleCheck(id) {
     }
 }
 
+let lastDeletedItem = null;
+let lastDeletedIndex = null;
+
 // Remove single item from the index
 function removeItem(id) {
-    state.items = state.items.filter(item => item.id !== id);
-
-    // Ensure there is always at least one editable row
-    if (state.items.length === 0) {
-        state.items.push({
-            id: Date.now(),
-            name: "",
-            price: null,
-            quantity: 1,
-            checked: false
-        });
+    const index = state.items.findIndex(item => item.id === id);
+    if (index !== -1) {
+        lastDeletedItem = state.items[index];
+        lastDeletedIndex = index;
+        
+        state.items.splice(index, 1);
+        
+        saveToLocalStorage();
+        renderList();
+        showToast("Artículo eliminado", undoDelete);
     }
+}
 
-    saveToLocalStorage();
-    renderList();
-    showToast("Artículo eliminado");
+// Undo the last deletion
+function undoDelete() {
+    if (lastDeletedItem !== null && lastDeletedIndex !== null) {
+        state.items.splice(lastDeletedIndex, 0, lastDeletedItem);
+        saveToLocalStorage();
+        renderList();
+        
+        lastDeletedItem = null;
+        lastDeletedIndex = null;
+        
+        const toastEl = document.getElementById('feedback-toast');
+        const toast = bootstrap.Toast.getInstance(toastEl);
+        if (toast) {
+            toast.hide();
+        }
+    }
 }
 
 // Calculate Totals, Percentages and progress metrics
@@ -355,16 +311,42 @@ function calculateTotals() {
         }
     });
 
+    // Format full numbers
+    const fullBs = formatCurrency(totalBs);
+    
     // Update Header Display (Bolívares)
-    totalDisplay.textContent = `Bs. ${formatCurrency(totalBs)}`;
+    if (totalBs >= 1000000) {
+        const truncatedBs = fullBs.substring(0, 7) + '...';
+        totalDisplay.innerHTML = `Bs. ${truncatedBs} <button class="btn btn-light text-primary py-0 px-2 ms-2 rounded-pill shadow-sm" onclick="showFullTotalModal()" style="font-size: 0.5em; vertical-align: middle;">Ver más</button>`;
+    } else {
+        totalDisplay.innerHTML = `Bs. ${fullBs}`;
+    }
+    
+    // Update Modal Display (in case it is opened)
+    const modalTotalBs = document.getElementById('modal-total-bs');
+    if (modalTotalBs) modalTotalBs.textContent = `Bs. ${fullBs}`;
 
     // Handle optional Dollar Exchange Rate conversion
     if (state.exchangeRate > 0) {
         usdTotalWrapper.classList.remove('d-none');
         const totalUSD = totalBs / state.exchangeRate;
-        usdTotalDisplay.textContent = `$${formatCurrency(totalUSD)}`;
+        const fullUSD = formatCurrency(totalUSD);
+        
+        if (totalUSD >= 1000000) {
+            usdTotalDisplay.innerHTML = `$${fullUSD.substring(0, 7)}...`;
+        } else {
+            usdTotalDisplay.innerHTML = `$${fullUSD}`;
+        }
+        
+        const modalTotalUsd = document.getElementById('modal-total-usd');
+        if (modalTotalUsd) {
+            modalTotalUsd.textContent = `Equivalente: $${fullUSD}`;
+            modalTotalUsd.classList.remove('d-none');
+        }
     } else {
         usdTotalWrapper.classList.add('d-none');
+        const modalTotalUsd = document.getElementById('modal-total-usd');
+        if (modalTotalUsd) modalTotalUsd.classList.add('d-none');
     }
 
     // Update Progress Trackers
@@ -373,6 +355,28 @@ function calculateTotals() {
     progressBar.setAttribute('aria-valuenow', percentage);
     progressText.textContent = `${totalCheckedCount} de ${totalCount} productos comprados`;
     progressPercentage.textContent = `${percentage}%`;
+}
+
+function showFullTotalModal() {
+    if (fullTotalModal) fullTotalModal.show();
+}
+
+function openEditRateModal() {
+    document.getElementById('custom-rate-input').value = state.exchangeRate || '';
+    editRateModal.show();
+    setTimeout(() => document.getElementById('custom-rate-input').focus(), 500);
+}
+
+function submitCustomRate() {
+    const val = parseFloat(document.getElementById('custom-rate-input').value);
+    if (!isNaN(val) && val > 0) {
+        state.exchangeRate = val;
+        saveToLocalStorage();
+        document.getElementById('exchange-rate-input').value = val;
+        calculateTotals();
+        editRateModal.hide();
+        showToast("Tasa de cambio actualizada");
+    }
 }
 
 // Fetch latest Exchange Rate from BCV
@@ -411,6 +415,7 @@ async function tasaDeCambio() {
 // Toggle Items Filter view
 function filterList(filter) {
     state.activeFilter = filter;
+    currentPage = 1;
     renderList();
 }
 
@@ -421,13 +426,7 @@ function confirmClearAll() {
 
 // Execute absolute wipeout
 function executeClearAll() {
-    state.items = [{
-        id: Date.now(),
-        name: "",
-        price: null,
-        quantity: 1,
-        checked: false
-    }];
+    state.items = [];
     saveToLocalStorage();
     clearAllModal.hide();
     renderList();
@@ -454,10 +453,28 @@ function escapeHtml(text) {
 }
 
 // Utility: Toast feedback indicator
-function showToast(msg) {
+function showToast(msg, undoCallback = null) {
     const toastEl = document.getElementById('feedback-toast');
     document.getElementById('toast-message').textContent = msg;
-    const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+    
+    const actionContainer = document.getElementById('toast-action');
+    const undoBtn = document.getElementById('toast-undo-btn');
+    
+    let toast = bootstrap.Toast.getInstance(toastEl);
+    if (toast) {
+        toast.dispose();
+    }
+    
+    if (undoCallback) {
+        actionContainer.classList.remove('d-none');
+        undoBtn.onclick = undoCallback;
+        toast = new bootstrap.Toast(toastEl, { delay: 5000 }); // Mayor tiempo para permitir deshacer
+    } else {
+        actionContainer.classList.add('d-none');
+        undoBtn.onclick = null;
+        toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+    }
+    
     toast.show();
 }
 
