@@ -135,10 +135,15 @@
 
         <!-- Shopping List Container -->
         <main>
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold mb-0 text-secondary-emphasis">Artículos</h5>
-                <span class="text-muted small d-none d-sm-inline"><i class="fa-solid fa-keyboard me-1"></i>
-                    <kbd>F1</kbd> para añadir un artículo rápidamente</span>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted small d-none d-sm-inline"><i class="fa-solid fa-keyboard me-1"></i>
+                        <kbd>F1</kbd> para añadir</span>
+                    <button class="btn btn-sm btn-primary px-3 text-nowrap" onclick="shareList()">
+                        <i class="fa-solid fa-share-nodes"></i> <span class="ms-1 fw-medium">Compartir</span>
+                    </button>
+                </div>
             </div>
 
             <!-- List of items wrapper -->
@@ -190,24 +195,18 @@
                             <input type="text" class="form-control" id="modal-item-name" placeholder="Ej. Harina Pan"
                                 required>
                         </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label for="modal-item-quantity"
-                                    class="form-label text-secondary fw-semibold">Cantidad</label>
-                                <input type="number" class="form-control" id="modal-item-quantity" value="1" min="1"
-                                    step="1" required>
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label for="modal-item-price" class="form-label text-secondary fw-semibold">Precio
-                                    Unitario (Bs)</label>
-                                <input type="number" class="form-control" id="modal-item-price" placeholder="0.00"
-                                    min="0" step="any">
-                            </div>
+                        <div class="mb-3">
+                            <label for="modal-item-quantity" class="form-label text-secondary fw-semibold">Cantidad</label>
+                            <input type="number" class="form-control" id="modal-item-quantity" value="1" min="1" step="1" oninput="if(this.value < 0) this.value = 1;" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modal-item-price" class="form-label text-secondary fw-semibold">Precio Unitario (Bs)</label>
+                            <input type="number" class="form-control" id="modal-item-price" placeholder="0.00" min="0" step="any" oninput="if(this.value < 0) this.value = 0;">
                         </div>
                         <button type="submit" class="d-none"></button>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="submitNewItem()">Guardar Artículo</button>
                 </div>

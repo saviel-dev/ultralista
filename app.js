@@ -258,9 +258,22 @@ function submitNewItem() {
         return; // Validacion simple
     }
 
-    const quantity = parseInt(qtyInput.value) || 1;
+    // Avoid duplicate items (case-insensitive)
+    const isDuplicate = state.items.some(i => i.name.toLowerCase() === name.toLowerCase() && i.id !== editingItemId);
+    if (isDuplicate) {
+        showToast("⚠️ Este artículo ya está en la lista");
+        nameInput.focus();
+        return;
+    }
+
+    let quantity = parseInt(qtyInput.value) || 1;
+    quantity = Math.max(1, quantity); // Nunca menos de 1
+
     // Permitimos precio vacío o 0
-    const price = priceInput.value ? parseFloat(priceInput.value) : null;
+    let price = priceInput.value ? parseFloat(priceInput.value) : null;
+    if (price !== null) {
+        price = Math.max(0, price); // Nunca menos de 0
+    }
 
     if (editingItemId !== null) {
         const itemIndex = state.items.findIndex(i => i.id === editingItemId);
@@ -668,5 +681,53 @@ function copyTotalToClipboard() {
     }).catch(err => {
         console.error("Error al copiar: ", err);
         showToast("❌ Error al copiar el monto");
+    });
+}
+
+// Generate and Share the formatted list
+function shareList() {
+    if (state.items.length === 0) {
+        showToast("⚠️ La lista está vacía");
+        return;
+    }
+
+    const title = state.title.trim() || "Lista Pendiente";
+    let text = `${title} - Ultralista App:\n`;
+    
+    state.items.forEach((item, index) => {
+        const priceBs = item.price ? formatCurrency(item.price) : '0,00';
+        let pricePart = `${priceBs} Bs.`;
+        if (state.exchangeRate > 0) {
+            const usdVal = item.price ? (item.price / state.exchangeRate) : 0;
+            pricePart = `${priceBs} Bs. / $${formatCurrency(usdVal)}`;
+        }
+        
+        const qtyText = item.quantity > 1 ? ` (x${item.quantity})` : '';
+        text += `- ${item.name}${qtyText} - ${pricePart}.\n`;
+        if (index < state.items.length - 1) {
+            text += `-----------\n`;
+        }
+    });
+
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text
+        }).catch(err => {
+            console.error("Error al compartir (o usuario canceló):", err);
+            // Intentamos copiar como fallback
+            copyToClipboardShare(text);
+        });
+    } else {
+        copyToClipboardShare(text);
+    }
+}
+
+function copyToClipboardShare(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("📋 Lista copiada al portapapeles");
+    }).catch(err => {
+        console.error("Error al copiar lista: ", err);
+        showToast("❌ Error al copiar la lista");
     });
 }
