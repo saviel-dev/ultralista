@@ -90,26 +90,26 @@
         <div class="card premium-card px-3 py-2 mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.15s;">
             <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between gap-3">
                 <!-- Exchange Rate and Clear Button -->
-                <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
-                    <div class="input-group input-group-sm" style="max-width: 260px; min-width: 180px;">
-                        <span class="input-group-text bg-body-secondary fw-semibold">
-                            <i class="fa-solid fa-dollar-sign text-success me-1"></i> Tasa:
+                <div class="d-flex flex-nowrap gap-2 align-items-center mt-2 w-100 justify-content-center justify-content-md-start" style="max-width: max-content;">
+                    <div class="input-group input-group-sm flex-grow-1" style="max-width: 260px; min-width: 180px;">
+                        <span class="input-group-text bg-body-secondary fw-semibold px-2">
+                            <i class="fa-solid fa-dollar-sign text-success"></i><span class="d-none d-sm-inline ms-1">Tasa:</span>
                         </span>
                         <input type="number" id="exchange-rate-input"
-                            class="form-control bg-body-tertiary cursor-pointer px-2" readonly placeholder="Cargando..."
+                            class="form-control bg-body-tertiary cursor-pointer px-1 px-sm-2 text-center" readonly placeholder="..."
                             onclick="openEditRateModal()" title="Click para editar manualmente">
-                        <button class="btn btn-outline-primary" type="button" onclick="openEditRateModal()"
+                        <button class="btn btn-outline-primary px-2" type="button" onclick="openEditRateModal()"
                             title="Editar Tasa Manualmente">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button class="btn btn-outline-success" type="button" onclick="tasaDeCambio()"
+                        <button class="btn btn-outline-success px-2" type="button" onclick="tasaDeCambio()"
                             title="Actualizar Tasa BCV">
                             <i class="fa-solid fa-rotate-right"></i>
                         </button>
                     </div>
-                    <button class="btn btn-sm btn-outline-danger px-3" onclick="confirmClearAll()"
+                    <button class="btn btn-sm btn-outline-danger px-2 px-sm-3 text-nowrap flex-shrink-0" onclick="confirmClearAll()"
                         title="Limpiar lista completa">
-                        <i class="fa-solid fa-broom"></i>
+                        <i class="fa-solid fa-broom"></i> <span class="d-none d-sm-inline ms-1">Limpiar</span>
                     </button>
                 </div>
 
