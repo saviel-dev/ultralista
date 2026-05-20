@@ -36,7 +36,7 @@
                 </button>
             </div>
 
-            <div class="card premium-card bg-body-tertiary p-4 mb-4">
+            <div class="card premium-card bg-body-tertiary p-4 mb-4 animate__animated animate__fadeInDown">
                 <div class="row align-items-center g-3">
                     <div class="col-md-7">
                         <small class="text-muted d-block text-uppercase tracking-wider fw-bold fs-7 mb-1">Presupuesto de
@@ -46,11 +46,25 @@
                             aria-label="Título de la lista">
                     </div>
                     <div class="col-md-5 text-md-end">
-                        <div class="total-badge-container p-3 text-center text-md-end d-inline-block w-100">
-                            <span class="d-block text-white-50 small text-uppercase fw-bold">Total Estimado</span>
-                            <h2 class="mb-0 fw-bold" id="total-display">Bs. 0,00</h2>
+                        <div class="total-badge-container p-3 text-center text-md-end d-inline-block w-100 position-relative">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-white-50 small text-uppercase fw-bold">Total Estimado</span>
+                                <div>
+                                    <button id="copy-total-btn" onclick="copyTotalToClipboard()" class="btn btn-sm text-white border-0 opacity-75 p-1" title="Copiar monto" aria-label="Copiar monto" onmouseover="this.classList.remove('opacity-75')" onmouseout="this.classList.add('opacity-75')">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                    <button id="currency-toggle-btn" onclick="toggleCurrencyDisplay()"
+                                        class="btn btn-sm currency-toggle-pill ms-1"
+                                        title="Cambiar moneda" aria-label="Cambiar entre Bs y $">
+                                        <span id="currency-toggle-label">Bs ⇄ $</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="total-flip-wrapper">
+                                <h2 class="mb-0 fw-bold total-flip-text" id="total-display">Bs. 0,00</h2>
+                            </div>
                             <div id="usd-total-wrapper" class="small text-white-50 mt-1 d-none">
-                                Equivalente: <span id="usd-total-display">$0.00</span>
+                                Equiv: <span id="usd-total-display">$0.00</span>
                             </div>
                         </div>
                     </div>
@@ -73,28 +87,34 @@
         </header>
 
         <!-- Controls & Configuration Toolbar -->
-        <div class="card premium-card px-3 py-2 mb-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between gap-2">
-                <!-- Exchange Rate -->
-                <div class="mt-2 input-group input-group-sm" style="max-width: 260px; min-width: 180px;">
-                    <span class="input-group-text bg-body-secondary fw-semibold">
-                        <i class="fa-solid fa-dollar-sign text-success me-1"></i> Tasa:
-                    </span>
-                    <input type="number" id="exchange-rate-input"
-                        class="form-control bg-body-tertiary cursor-pointer px-2" readonly placeholder="Cargando..."
-                        onclick="openEditRateModal()" title="Click para editar manualmente">
-                    <button class="btn btn-outline-primary" type="button" onclick="openEditRateModal()"
-                        title="Editar Tasa Manualmente">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <button class="btn btn-outline-success" type="button" onclick="tasaDeCambio()"
-                        title="Actualizar Tasa BCV">
-                        <i class="fa-solid fa-rotate-right"></i>
+        <div class="card premium-card px-3 py-2 mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.15s;">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between gap-3">
+                <!-- Exchange Rate and Clear Button -->
+                <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                    <div class="input-group input-group-sm" style="max-width: 260px; min-width: 180px;">
+                        <span class="input-group-text bg-body-secondary fw-semibold">
+                            <i class="fa-solid fa-dollar-sign text-success me-1"></i> Tasa:
+                        </span>
+                        <input type="number" id="exchange-rate-input"
+                            class="form-control bg-body-tertiary cursor-pointer px-2" readonly placeholder="Cargando..."
+                            onclick="openEditRateModal()" title="Click para editar manualmente">
+                        <button class="btn btn-outline-primary" type="button" onclick="openEditRateModal()"
+                            title="Editar Tasa Manualmente">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-outline-success" type="button" onclick="tasaDeCambio()"
+                            title="Actualizar Tasa BCV">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger px-3" onclick="confirmClearAll()"
+                        title="Limpiar lista completa">
+                        <i class="fa-solid fa-broom"></i>
                     </button>
                 </div>
 
                 <!-- Utility actions -->
-                <div class="mt-3 d-flex gap-2 align-items-center">
+                <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
                     <div class="btn-group btn-group-sm" role="group">
                         <button type="button" class="btn btn-outline-secondary" onclick="filterList('all')"
                             id="btn-filter-all" title="Todos">
@@ -109,10 +129,6 @@
                             <i class="fa-solid fa-circle-check"></i> <span class="ms-1">Comprados</span>
                         </button>
                     </div>
-                    <button class="btn btn-sm btn-outline-danger px-3" onclick="confirmClearAll()"
-                        title="Limpiar lista completa">
-                        <i class="fa-regular fa-trash-can"></i> <span class="ms-1">Limpiar</span>
-                    </button>
                 </div>
             </div>
         </div>

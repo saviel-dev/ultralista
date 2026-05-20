@@ -12,13 +12,14 @@ body {
 
 /* Premium custom shadows & shapes */
 .premium-card {
-    border: none;
+    border: 1px solid rgba(13, 110, 253, 0.35); /* Borde azul para modo claro */
     border-radius: 18px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
 [data-bs-theme="dark"] .premium-card {
+    border: none; /* Quitamos el borde azul en modo oscuro */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     background-color: #1e1e24;
 }
@@ -77,6 +78,43 @@ body {
     box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
 }
 
+/* Currency toggle pill button */
+.currency-toggle-pill {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    letter-spacing: 0.03em;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s ease, transform 0.15s ease;
+    white-space: nowrap;
+}
+.currency-toggle-pill:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: scale(1.07);
+}
+.currency-toggle-pill:active {
+    transform: scale(0.96);
+}
+
+/* Flip animation for the total number */
+#total-flip-wrapper {
+    perspective: 600px;
+}
+.total-flip-text {
+    display: inline-block;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.total-flip-text.flipping {
+    transform: rotateX(90deg);
+    opacity: 0;
+}
+
+
 /* Progress Bar height */
 .progress {
     height: 8px;
@@ -101,6 +139,18 @@ input[type=number]::-webkit-outer-spin-button {
 input[type=number] {
     -moz-appearance: textfield;
     appearance: textfield;
+}
+
+/* Mobile responsive sizes for total widget buttons */
+@media (max-width: 576px) {
+    .currency-toggle-pill {
+        font-size: 0.85rem;
+        padding: 4px 14px;
+    }
+    #copy-total-btn {
+        font-size: 1.15rem;
+        padding: 4px 8px !important;
+    }
 }
 
 

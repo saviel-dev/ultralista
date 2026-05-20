@@ -3,7 +3,8 @@ let state = {
     title: "",
     items: [],
     exchangeRate: 0,
-    activeFilter: 'all' // 'all', 'pending', 'completed'
+    activeFilter: 'all', // 'all', 'pending', 'completed'
+    displayCurrency: 'bs'  // 'bs' or 'usd'
 };
 
 // DOM elements references
@@ -355,42 +356,65 @@ function calculateTotals() {
         }
     });
 
-    // Format full numbers
     const fullBs = formatCurrency(totalBs);
-    
-    // Update Header Display (Bolívares)
-    if (totalBs >= 1000000) {
-        const truncatedBs = fullBs.substring(0, 7) + '...';
-        totalDisplay.innerHTML = `Bs. ${truncatedBs} <button class="btn btn-light text-primary py-0 px-2 ms-2 rounded-pill shadow-sm" onclick="showFullTotalModal()" style="font-size: 0.5em; vertical-align: middle;">Ver más</button>`;
-    } else {
-        totalDisplay.innerHTML = `Bs. ${fullBs}`;
+    const totalUSD = state.exchangeRate > 0 ? totalBs / state.exchangeRate : 0;
+    const fullUSD = formatCurrency(totalUSD);
+
+    // Determine which currency to display
+    const showUsd = state.displayCurrency === 'usd' && state.exchangeRate > 0;
+
+    // Update the toggle button label
+    const toggleBtn = document.getElementById('currency-toggle-label');
+    if (toggleBtn) {
+        toggleBtn.textContent = showUsd ? '$ ⇄ Bs' : 'Bs ⇄ $';
     }
-    
-    // Update Modal Display (in case it is opened)
+    // Show/hide toggle button only when a rate is available
+    const currencyBtn = document.getElementById('currency-toggle-btn');
+    if (currencyBtn) {
+        currencyBtn.style.visibility = state.exchangeRate > 0 ? 'visible' : 'hidden';
+    }
+
+    if (showUsd) {
+        // --- Dollar mode ---
+        if (totalUSD >= 1000000) {
+            const truncatedUSD = fullUSD.substring(0, 7) + '...';
+            totalDisplay.innerHTML = `$${truncatedUSD} <button class="btn btn-light text-primary py-0 px-2 ms-2 rounded-pill shadow-sm" onclick="showFullTotalModal()" style="font-size: 0.5em; vertical-align: middle;">Ver más</button>`;
+        } else {
+            totalDisplay.innerHTML = `$${fullUSD}`;
+        }
+        // Show Bs equivalent below
+        usdTotalWrapper.classList.remove('d-none');
+        usdTotalDisplay.innerHTML = `Bs. ${totalBs >= 1000000 ? fullBs.substring(0, 7) + '...' : fullBs}`;
+        usdTotalWrapper.querySelector('span')?.previousSibling?.remove?.();
+        // Fix the label text
+        usdTotalWrapper.innerHTML = `Equiv: <span id="usd-total-display">Bs. ${totalBs >= 1000000 ? fullBs.substring(0, 7) + '...' : fullBs}</span>`;
+    } else {
+        // --- Bolívar mode ---
+        if (totalBs >= 1000000) {
+            const truncatedBs = fullBs.substring(0, 7) + '...';
+            totalDisplay.innerHTML = `Bs. ${truncatedBs} <button class="btn btn-light text-primary py-0 px-2 ms-2 rounded-pill shadow-sm" onclick="showFullTotalModal()" style="font-size: 0.5em; vertical-align: middle;">Ver más</button>`;
+        } else {
+            totalDisplay.innerHTML = `Bs. ${fullBs}`;
+        }
+        if (state.exchangeRate > 0) {
+            usdTotalWrapper.classList.remove('d-none');
+            usdTotalWrapper.innerHTML = `Equiv: <span id="usd-total-display">$${totalUSD >= 1000000 ? fullUSD.substring(0, 7) + '...' : fullUSD}</span>`;
+        } else {
+            usdTotalWrapper.classList.add('d-none');
+        }
+    }
+
+    // Update Modal Display
     const modalTotalBs = document.getElementById('modal-total-bs');
     if (modalTotalBs) modalTotalBs.textContent = `Bs. ${fullBs}`;
-
-    // Handle optional Dollar Exchange Rate conversion
-    if (state.exchangeRate > 0) {
-        usdTotalWrapper.classList.remove('d-none');
-        const totalUSD = totalBs / state.exchangeRate;
-        const fullUSD = formatCurrency(totalUSD);
-        
-        if (totalUSD >= 1000000) {
-            usdTotalDisplay.innerHTML = `$${fullUSD.substring(0, 7)}...`;
-        } else {
-            usdTotalDisplay.innerHTML = `$${fullUSD}`;
-        }
-        
-        const modalTotalUsd = document.getElementById('modal-total-usd');
-        if (modalTotalUsd) {
+    const modalTotalUsd = document.getElementById('modal-total-usd');
+    if (modalTotalUsd) {
+        if (state.exchangeRate > 0) {
             modalTotalUsd.textContent = `Equivalente: $${fullUSD}`;
             modalTotalUsd.classList.remove('d-none');
+        } else {
+            modalTotalUsd.classList.add('d-none');
         }
-    } else {
-        usdTotalWrapper.classList.add('d-none');
-        const modalTotalUsd = document.getElementById('modal-total-usd');
-        if (modalTotalUsd) modalTotalUsd.classList.add('d-none');
     }
 
     // Update Progress Trackers
@@ -399,6 +423,20 @@ function calculateTotals() {
     progressBar.setAttribute('aria-valuenow', percentage);
     progressText.textContent = `${totalCheckedCount} de ${totalCount} productos comprados`;
     progressPercentage.textContent = `${percentage}%`;
+}
+
+// Toggle between Bs and USD display with a flip animation
+function toggleCurrencyDisplay() {
+    if (state.exchangeRate <= 0) return;
+
+    const flipText = document.getElementById('total-display');
+    flipText.classList.add('flipping');
+
+    setTimeout(() => {
+        state.displayCurrency = state.displayCurrency === 'bs' ? 'usd' : 'bs';
+        calculateTotals();
+        flipText.classList.remove('flipping');
+    }, 180);
 }
 
 function showFullTotalModal() {
@@ -426,9 +464,20 @@ function submitCustomRate() {
 // Fetch latest Exchange Rate from BCV
 async function tasaDeCambio() {
     const rateInput = document.getElementById('exchange-rate-input');
+    const refreshBtn = document.querySelector('button[onclick="tasaDeCambio()"]');
+    const refreshIcon = refreshBtn ? refreshBtn.querySelector('i') : null;
+
+    // Spinner animation while loading
+    if (refreshBtn) refreshBtn.disabled = true;
+    if (refreshIcon) {
+        refreshIcon.classList.add('fa-spin');
+    }
+
     if (rateInput && !rateInput.value) {
         rateInput.placeholder = "Consultando...";
     }
+
+    const previousRate = state.exchangeRate;
 
     try {
         const respuesta = await fetch("https://ve.dolarapi.com/v1/dolares");
@@ -441,18 +490,34 @@ async function tasaDeCambio() {
         const bcv = datos.find(d => d.fuente === 'oficial');
         
         if (bcv && bcv.promedio) {
-            state.exchangeRate = bcv.promedio;
-            if (rateInput) {
-                rateInput.value = state.exchangeRate;
+            const newRate = bcv.promedio.toFixed(2);
+
+            if (previousRate > 0 && previousRate === newRate) {
+                showToast(`✓ Tasa ya actualizada: Bs. ${formatCurrency(newRate)}`);
+            } else {
+                state.exchangeRate = newRate;
+                if (rateInput) {
+                    rateInput.value = newRate;
+                }
+                saveToLocalStorage();
+                calculateTotals();
+                showToast(`🔄 Tasa actualizada: Bs. ${formatCurrency(newRate)} por $`);
             }
-            saveToLocalStorage();
-            calculateTotals();
+        } else {
+            showToast("⚠️ No se pudo obtener la tasa BCV");
         }
     } catch (error) {
         console.error("Error al obtener la tasa de cambio:", error);
+        showToast("❌ Error al consultar la tasa BCV");
         if (rateInput && !rateInput.value) {
             rateInput.placeholder = "Error al consultar";
         }
+    } finally {
+        // Remove spinner and re-enable button
+        if (refreshIcon) {
+            refreshIcon.classList.remove('fa-spin');
+        }
+        if (refreshBtn) refreshBtn.disabled = false;
     }
 }
 
@@ -555,4 +620,53 @@ function updateThemeUI(theme) {
         icon.className = 'fa-solid fa-moon me-1';
         text.textContent = 'Modo Oscuro';
     }
+}
+
+// Copy total to clipboard
+function copyTotalToClipboard() {
+    let totalBs = 0;
+    state.items.forEach(item => {
+        const price = item.price && !isNaN(item.price) ? item.price : 0;
+        const quantity = item.quantity && !isNaN(item.quantity) ? item.quantity : 1;
+        if (!item.checked) totalBs += price * quantity;
+    });
+
+    const showUsd = state.displayCurrency === 'usd' && state.exchangeRate > 0;
+    let textToCopy = "";
+    
+    if (showUsd) {
+        const totalUSD = totalBs / state.exchangeRate;
+        textToCopy = `$${formatCurrency(totalUSD)}`;
+    } else {
+        textToCopy = `Bs. ${formatCurrency(totalBs)}`;
+    }
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        showToast(`📋 Copiado al portapapeles: ${textToCopy}`);
+        
+        // Add visual animation effect to the button
+        const btn = document.getElementById('copy-total-btn');
+        if (btn) {
+            const icon = btn.querySelector('i');
+            if (icon) {
+                // Change to check icon (white to contrast with the blue background)
+                icon.className = 'fa-solid fa-check text-white';
+                btn.classList.remove('opacity-75');
+                btn.classList.add('opacity-100');
+                
+                // Add rubberBand bounce effect
+                btn.classList.add('animate__animated', 'animate__rubberBand');
+                
+                // Reset after 1.5 seconds
+                setTimeout(() => {
+                    icon.className = 'fa-regular fa-copy';
+                    btn.classList.remove('animate__animated', 'animate__rubberBand', 'opacity-100');
+                    btn.classList.add('opacity-75');
+                }, 1500);
+            }
+        }
+    }).catch(err => {
+        console.error("Error al copiar: ", err);
+        showToast("❌ Error al copiar el monto");
+    });
 }
