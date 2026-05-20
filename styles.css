@@ -151,6 +151,15 @@ input[type=number] {
         font-size: 1.15rem;
         padding: 4px 8px !important;
     }
+    
+    /* Center toast notifications on mobile */
+    .toast-container {
+        right: 50%;
+        transform: translateX(50%);
+        bottom: 20px;
+        width: max-content;
+        max-width: 90vw;
+    }
 }
 
 
