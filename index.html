@@ -196,13 +196,16 @@
                             <input type="number" class="form-control" id="modal-item-quantity" value="1" min="1" step="1" oninput="this.classList.remove('is-invalid'); if(this.value < 0) this.value = 1;">
                         </div>
                         <div class="mb-3">
-                            <label for="modal-item-price" class="form-label text-secondary fw-semibold">Precio Unitario</label>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="modal-item-price" class="form-label text-secondary fw-semibold mb-0">Precio Unitario</label>
+                                <small id="modal-price-equivalent" class="text-muted fw-medium"></small>
+                            </div>
                             <div class="input-group">
-                                <select class="form-select text-center flex-grow-0" id="modal-item-currency" style="width: auto; max-width: 85px;">
+                                <select class="form-select text-center flex-grow-0" id="modal-item-currency" style="width: auto; max-width: 85px;" onchange="updateModalEquivalent()">
                                     <option value="Bs">Bs</option>
                                     <option value="USD">$</option>
                                 </select>
-                                <input type="number" class="form-control" id="modal-item-price" placeholder="0.00" min="0" step="any" oninput="this.classList.remove('is-invalid'); if(this.value < 0) this.value = 0;">
+                                <input type="number" class="form-control" id="modal-item-price" placeholder="0.00" min="0" step="any" oninput="this.classList.remove('is-invalid'); if(this.value < 0) this.value = 0; updateModalEquivalent();">
                             </div>
                         </div>
                         <button type="submit" class="d-none"></button>

@@ -190,11 +190,18 @@ function renderList() {
                         <span class="fw-bold" style="font-size: 0.85rem;">${item.quantity || 1}</span>
                     </div>
 
-                    <!-- Price Badge -->
+                    <!-- Price Badge Bs -->
                     <div class="bg-body-tertiary px-2 py-1 rounded-pill text-nowrap border d-flex align-items-center">
                         <small class="text-muted me-1">Bs.</small>
                         <span class="fw-bold text-success" style="font-size: 0.85rem;">${item.price !== null ? formatCurrency(item.price) : '0,00'}</span>
                     </div>
+
+                    <!-- Price Badge USD (only if exchange rate is set) -->
+                    ${state.exchangeRate > 0 ? `
+                    <div class="bg-body-tertiary px-2 py-1 rounded-pill text-nowrap border d-flex align-items-center">
+                        <small class="text-muted me-1">$</small>
+                        <span class="fw-bold text-primary" style="font-size: 0.85rem;">${item.price !== null ? formatCurrency(item.price / state.exchangeRate) : '0.00'}</span>
+                    </div>` : ''}
                 </div>
                 </div>
             </div>
@@ -246,6 +253,7 @@ function openAddItemModal() {
     const currencySelect = document.getElementById('modal-item-currency');
     if (currencySelect) currencySelect.value = 'Bs';
 
+    updateModalEquivalent();
     addItemModal.show();
     setTimeout(() => {
         document.getElementById('modal-item-name').focus();
@@ -272,10 +280,39 @@ function openEditItemModal(id) {
     
     document.getElementById('modal-item-price').value = item.price !== null ? item.price : '';
     
+    updateModalEquivalent();
     addItemModal.show();
     setTimeout(() => {
         document.getElementById('modal-item-name').focus();
     }, 400);
+}
+
+function updateModalEquivalent() {
+    const equivalentLabel = document.getElementById('modal-price-equivalent');
+    if (!equivalentLabel) return;
+
+    if (state.exchangeRate <= 0) {
+        equivalentLabel.textContent = '';
+        return;
+    }
+
+    const priceInput = document.getElementById('modal-item-price');
+    const currencySelect = document.getElementById('modal-item-currency');
+    const currency = currencySelect ? currencySelect.value : 'Bs';
+    
+    let price = parseFloat(priceInput.value);
+    if (isNaN(price) || price <= 0) {
+        equivalentLabel.textContent = '';
+        return;
+    }
+
+    if (currency === 'Bs') {
+        const usd = price / state.exchangeRate;
+        equivalentLabel.textContent = `≈ $${formatCurrency(usd)}`;
+    } else {
+        const bs = price * state.exchangeRate;
+        equivalentLabel.textContent = `≈ Bs. ${formatCurrency(bs)}`;
+    }
 }
 
 function submitNewItem() {
@@ -755,7 +792,7 @@ function shareList() {
         const priceBs = item.price ? formatCurrency(item.price) : '0,00';
         let pricePart = `${priceBs} Bs.`;
         if (state.exchangeRate > 0) {
-            const usdVal = item.price ? (item.price / state.exchangeRate) : 0;
+            const usdVal = item.price ? (item.price / state.exchangeRate).toFixed(2) : 0;
             pricePart = `${priceBs} Bs. / $${formatCurrency(usdVal)}`;
         }
         
