@@ -353,7 +353,7 @@ function submitNewItem() {
     // Avoid duplicate items (case-insensitive)
     const isDuplicate = state.items.some(i => i.name.toLowerCase() === name.toLowerCase() && i.id !== editingItemId);
     if (isDuplicate) {
-        showToast("⚠️ Este artículo ya está en la lista");
+        showToast("Este artículo ya está en la lista");
         nameInput.focus();
         return;
     }
@@ -367,7 +367,7 @@ function submitNewItem() {
         if (state.exchangeRate > 0) {
             price = price * state.exchangeRate;
         } else {
-            showToast("⚠️ Define la tasa de cambio primero para usar $");
+            showToast("Define la tasa de cambio primero para usar $");
             return;
         }
     }
@@ -603,7 +603,7 @@ async function tasaDeCambio() {
             const newRate = bcv.promedio.toFixed(2);
 
             if (previousRate > 0 && previousRate === newRate) {
-                showToast(`✓ Tasa ya actualizada: Bs. ${formatCurrency(newRate)}`);
+                showToast(`Tasa ya actualizada: Bs. ${formatCurrency(newRate)}`);
             } else {
                 state.exchangeRate = newRate;
                 if (rateInput) {
@@ -611,14 +611,14 @@ async function tasaDeCambio() {
                 }
                 saveToLocalStorage();
                 calculateTotals();
-                showToast(`🔄 Tasa actualizada: Bs. ${formatCurrency(newRate)} por $`);
+                showToast(`Tasa actualizada: Bs. ${formatCurrency(newRate)} por $`);
             }
         } else {
-            showToast("⚠️ No se pudo obtener la tasa BCV");
+            showToast("No se pudo obtener la tasa BCV");
         }
     } catch (error) {
         console.error("Error al obtener la tasa de cambio:", error);
-        showToast("❌ Error al consultar la tasa BCV");
+        showToast("Error al consultar la tasa BCV");
         if (rateInput && !rateInput.value) {
             rateInput.placeholder = "Error al consultar";
         }
@@ -674,7 +674,33 @@ function escapeHtml(text) {
 // Utility: Toast feedback indicator
 function showToast(msg, undoCallback = null) {
     const toastEl = document.getElementById('feedback-toast');
-    document.getElementById('toast-message').textContent = msg;
+    
+    // Map emojis/symbols to beautiful Font Awesome icons
+    let iconHtml = '';
+    let cleanMsg = msg;
+
+    if (cleanMsg.includes('⚠️')) {
+        iconHtml = '<i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>';
+        cleanMsg = cleanMsg.replace('⚠️', '').trim();
+    } else if (cleanMsg.includes('❌')) {
+        iconHtml = '<i class="fa-solid fa-circle-xmark text-danger me-2"></i>';
+        cleanMsg = cleanMsg.replace('❌', '').trim();
+    } else if (cleanMsg.includes('📋')) {
+        iconHtml = '<i class="fa-solid fa-clipboard text-info me-2"></i>';
+        cleanMsg = cleanMsg.replace('📋', '').trim();
+    } else if (cleanMsg.includes('🔄')) {
+        iconHtml = '<i class="fa-solid fa-arrows-rotate text-info me-2"></i>';
+        cleanMsg = cleanMsg.replace('🔄', '').trim();
+    } else if (cleanMsg.includes('✓')) {
+        iconHtml = '<i class="fa-solid fa-circle-check text-success me-2"></i>';
+        cleanMsg = cleanMsg.replace('✓', '').trim();
+    } else if (cleanMsg.toLowerCase().includes('eliminado') || cleanMsg.toLowerCase().includes('vaciada')) {
+        iconHtml = '<i class="fa-solid fa-trash-can text-danger me-2"></i>';
+    } else {
+        iconHtml = '<i class="fa-solid fa-circle-check text-success me-2"></i>';
+    }
+
+    document.getElementById('toast-message').innerHTML = `${iconHtml}<span>${cleanMsg}</span>`;
     
     const actionContainer = document.getElementById('toast-action');
     const undoBtn = document.getElementById('toast-undo-btn');
@@ -752,36 +778,17 @@ function copyTotalToClipboard() {
     }
 
     navigator.clipboard.writeText(textToCopy).then(() => {
-        showToast(`📋 Copiado al portapapeles: ${textToCopy}`);
-        
-        // Add visual animation effect to the button
-        const btn = document.getElementById('copy-total-btn');
-        if (btn) {
-            const icon = btn.querySelector('i');
-            if (icon) {
-                // Change to check icon
-                icon.className = 'fa-solid fa-check text-success';
-                
-                // Add rubberBand bounce effect
-                btn.classList.add('animate__animated', 'animate__rubberBand');
-                
-                // Reset after 1.5 seconds
-                setTimeout(() => {
-                    icon.className = 'fa-regular fa-copy';
-                    btn.classList.remove('animate__animated', 'animate__rubberBand');
-                }, 1500);
-            }
-        }
+        showToast(`Copiado al portapapeles: ${textToCopy}`);
     }).catch(err => {
         console.error("Error al copiar: ", err);
-        showToast("❌ Error al copiar el monto");
+        showToast("Error al copiar el monto");
     });
 }
 
 // Generate and Share the formatted list
 function shareList() {
     if (state.items.length === 0) {
-        showToast("⚠️ La lista está vacía");
+        showToast("La lista está vacía");
         return;
     }
 
@@ -819,9 +826,9 @@ function shareList() {
 
 function copyToClipboardShare(text) {
     navigator.clipboard.writeText(text).then(() => {
-        showToast("📋 Lista copiada al portapapeles");
+        showToast("Lista copiada al portapapeles");
     }).catch(err => {
         console.error("Error al copiar lista: ", err);
-        showToast("❌ Error al copiar la lista");
+        showToast("Error al copiar la lista");
     });
 }
