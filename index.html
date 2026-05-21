@@ -50,9 +50,6 @@
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="text-white-50 small text-uppercase fw-bold">Total Estimado</span>
                                 <div>
-                                    <button id="copy-total-btn" onclick="copyTotalToClipboard()" class="btn btn-sm text-white border-0 opacity-75 p-1" title="Copiar monto" aria-label="Copiar monto" onmouseover="this.classList.remove('opacity-75')" onmouseout="this.classList.add('opacity-75')">
-                                        <i class="fa-regular fa-copy"></i>
-                                    </button>
                                     <button id="currency-toggle-btn" onclick="toggleCurrencyDisplay()"
                                         class="btn btn-sm currency-toggle-pill ms-1"
                                         title="Cambiar moneda" aria-label="Cambiar entre Bs y $">
@@ -115,20 +112,22 @@
 
                 <!-- Utility actions -->
                 <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center">
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('all')"
-                            id="btn-filter-all" title="Todos">
-                            <i class="fa-solid fa-list"></i> <span class="ms-1">Todos</span>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height: 38px;">
+                            Filtros
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('pending')"
-                            id="btn-filter-pending" title="Pendientes">
-                            <i class="fa-regular fa-clock"></i> <span class="ms-1">Pendientes</span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="filterList('completed')"
-                            id="btn-filter-completed" title="Comprados">
-                            <i class="fa-solid fa-circle-check"></i> <span class="ms-1">Comprados</span>
-                        </button>
+                        <ul class="dropdown-menu shadow-sm" aria-labelledby="filterDropdown">
+                            <li><button id="btn-filter-all" class="dropdown-item" type="button" onclick="filterList('all')">Todos</button></li>
+                            <li><button id="btn-filter-pending" class="dropdown-item" type="button" onclick="filterList('pending')">Pendientes</button></li>
+                            <li><button id="btn-filter-completed" class="dropdown-item" type="button" onclick="filterList('completed')">Comprados</button></li>
+                        </ul>
                     </div>
+                    <button id="copy-total-btn" class="btn btn-sm btn-copy-adaptive px-3 text-nowrap d-flex align-items-center" onclick="copyTotalToClipboard()" title="Copiar Total" style="height: 38px;">
+                        <i class="fa-regular fa-copy"></i><span class="ms-1 fw-medium">Copiar Total</span>
+                    </button>
+                    <button class="btn btn-sm btn-primary px-3 text-nowrap d-flex align-items-center" onclick="shareList()" style="height: 38px;">
+                        <i class="fa-solid fa-share-nodes"></i> <span class="ms-1 fw-medium">Compartir</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -137,12 +136,9 @@
         <main>
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold mb-0 text-secondary-emphasis">Artículos</h5>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-muted small d-none d-sm-inline"><i class="fa-solid fa-keyboard me-1"></i>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small d-none d-sm-inline me-1"><i class="fa-solid fa-keyboard me-1"></i>
                         <kbd>F1</kbd> para añadir</span>
-                    <button class="btn btn-sm btn-primary px-3 text-nowrap" onclick="shareList()">
-                        <i class="fa-solid fa-share-nodes"></i> <span class="ms-1 fw-medium">Compartir</span>
-                    </button>
                 </div>
             </div>
 
@@ -193,15 +189,21 @@
                             <label for="modal-item-name" class="form-label text-secondary fw-semibold">Nombre del
                                 producto</label>
                             <input type="text" class="form-control" id="modal-item-name" placeholder="Ej. Harina Pan"
-                                required>
+                                oninput="this.classList.remove('is-invalid')">
                         </div>
                         <div class="mb-3">
                             <label for="modal-item-quantity" class="form-label text-secondary fw-semibold">Cantidad</label>
-                            <input type="number" class="form-control" id="modal-item-quantity" value="1" min="1" step="1" oninput="if(this.value < 0) this.value = 1;" required>
+                            <input type="number" class="form-control" id="modal-item-quantity" value="1" min="1" step="1" oninput="this.classList.remove('is-invalid'); if(this.value < 0) this.value = 1;">
                         </div>
                         <div class="mb-3">
-                            <label for="modal-item-price" class="form-label text-secondary fw-semibold">Precio Unitario (Bs)</label>
-                            <input type="number" class="form-control" id="modal-item-price" placeholder="0.00" min="0" step="any" oninput="if(this.value < 0) this.value = 0;">
+                            <label for="modal-item-price" class="form-label text-secondary fw-semibold">Precio Unitario</label>
+                            <div class="input-group">
+                                <select class="form-select text-center flex-grow-0" id="modal-item-currency" style="width: auto; max-width: 85px;">
+                                    <option value="Bs">Bs</option>
+                                    <option value="USD">$</option>
+                                </select>
+                                <input type="number" class="form-control" id="modal-item-price" placeholder="0.00" min="0" step="any" oninput="this.classList.remove('is-invalid'); if(this.value < 0) this.value = 0;">
+                            </div>
                         </div>
                         <button type="submit" class="d-none"></button>
                     </form>

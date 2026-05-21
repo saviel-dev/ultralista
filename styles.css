@@ -147,10 +147,6 @@ input[type=number] {
         font-size: 0.85rem;
         padding: 4px 14px;
     }
-    #copy-total-btn {
-        font-size: 1.15rem;
-        padding: 4px 8px !important;
-    }
     
     /* Center toast notifications on mobile */
     .toast-container {
@@ -162,6 +158,34 @@ input[type=number] {
     }
 }
 
+/* Copiar Total button: filled grey on mobile, outlined on desktop */
+.btn-copy-adaptive {
+    color: var(--bs-secondary-color);
+    background-color: transparent;
+    border: 1px solid var(--bs-secondary-color);
+}
+.btn-copy-adaptive:hover {
+    color: var(--bs-body-color);
+    background-color: var(--bs-secondary-bg);
+    border-color: var(--bs-secondary-color);
+}
 
-
-
+@media (max-width: 767.98px) {
+    .btn-copy-adaptive {
+        color: #fff;
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+    .btn-copy-adaptive:hover {
+        background-color: #5c636a;
+        border-color: #565e64;
+    }
+    [data-bs-theme="dark"] .btn-copy-adaptive {
+        background-color: #495057;
+        border-color: #495057;
+    }
+    [data-bs-theme="dark"] .btn-copy-adaptive:hover {
+        background-color: #3d4349;
+        border-color: #373b3f;
+    }
+}

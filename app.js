@@ -92,14 +92,31 @@ function renderList() {
     // Update filter buttons UI
     ['all', 'pending', 'completed'].forEach(filter => {
         const btn = document.getElementById(`btn-filter-${filter}`);
-        if (filter === state.activeFilter) {
-            btn.classList.remove('btn-outline-secondary');
-            btn.classList.add('btn-primary');
-        } else {
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-outline-secondary');
+        if (btn) {
+            if (btn.classList.contains('dropdown-item')) {
+                if (filter === state.activeFilter) {
+                    btn.classList.add('active', 'fw-bold');
+                } else {
+                    btn.classList.remove('active', 'fw-bold');
+                }
+            } else {
+                if (filter === state.activeFilter) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary');
+                } else {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-secondary');
+                }
+            }
         }
     });
+    
+    // Optional: update dropdown text
+    const filterLabelMap = { 'all': 'Todos', 'pending': 'Pendientes', 'completed': 'Comprados' };
+    const dropdownToggle = document.getElementById('filterDropdown');
+    if (dropdownToggle) {
+        dropdownToggle.textContent = `${filterLabelMap[state.activeFilter]}`;
+    }
 
     if (filteredItems.length === 0) {
         listContainer.innerHTML = `
@@ -222,6 +239,13 @@ function openAddItemModal() {
     
     document.getElementById('add-item-form').reset();
     document.getElementById('modal-item-quantity').value = 1;
+    document.getElementById('modal-item-name').classList.remove('is-invalid');
+    document.getElementById('modal-item-quantity').classList.remove('is-invalid');
+    document.getElementById('modal-item-price').classList.remove('is-invalid');
+    
+    const currencySelect = document.getElementById('modal-item-currency');
+    if (currencySelect) currencySelect.value = 'Bs';
+
     addItemModal.show();
     setTimeout(() => {
         document.getElementById('modal-item-name').focus();
@@ -239,6 +263,13 @@ function openEditItemModal(id) {
     
     document.getElementById('modal-item-name').value = item.name;
     document.getElementById('modal-item-quantity').value = item.quantity;
+    document.getElementById('modal-item-name').classList.remove('is-invalid');
+    document.getElementById('modal-item-quantity').classList.remove('is-invalid');
+    document.getElementById('modal-item-price').classList.remove('is-invalid');
+    
+    const currencySelect = document.getElementById('modal-item-currency');
+    if (currencySelect) currencySelect.value = 'Bs';
+    
     document.getElementById('modal-item-price').value = item.price !== null ? item.price : '';
     
     addItemModal.show();
@@ -251,11 +282,35 @@ function submitNewItem() {
     const nameInput = document.getElementById('modal-item-name');
     const qtyInput = document.getElementById('modal-item-quantity');
     const priceInput = document.getElementById('modal-item-price');
+    const currencySelect = document.getElementById('modal-item-currency');
+
+    nameInput.classList.remove('is-invalid');
+    qtyInput.classList.remove('is-invalid');
+    priceInput.classList.remove('is-invalid');
+
+    let isValid = true;
 
     const name = nameInput.value.trim();
     if (!name) {
-        nameInput.focus();
-        return; // Validacion simple
+        nameInput.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    let qtyText = qtyInput.value.trim();
+    let quantity = parseInt(qtyText);
+    if (qtyText === "" || isNaN(quantity) || quantity < 1) {
+        qtyInput.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    let priceText = priceInput.value.trim();
+    if (priceText === "") {
+        priceInput.classList.add('is-invalid');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        return;
     }
 
     // Avoid duplicate items (case-insensitive)
@@ -266,13 +321,18 @@ function submitNewItem() {
         return;
     }
 
-    let quantity = parseInt(qtyInput.value) || 1;
-    quantity = Math.max(1, quantity); // Nunca menos de 1
+    const currency = currencySelect ? currencySelect.value : 'Bs';
 
-    // Permitimos precio vacío o 0
-    let price = priceInput.value ? parseFloat(priceInput.value) : null;
-    if (price !== null) {
-        price = Math.max(0, price); // Nunca menos de 0
+    let price = parseFloat(priceText);
+    price = Math.max(0, price); // Nunca menos de 0
+    
+    if (currency === 'USD') {
+        if (state.exchangeRate > 0) {
+            price = price * state.exchangeRate;
+        } else {
+            showToast("⚠️ Define la tasa de cambio primero para usar $");
+            return;
+        }
     }
 
     if (editingItemId !== null) {
@@ -662,10 +722,8 @@ function copyTotalToClipboard() {
         if (btn) {
             const icon = btn.querySelector('i');
             if (icon) {
-                // Change to check icon (white to contrast with the blue background)
-                icon.className = 'fa-solid fa-check text-white';
-                btn.classList.remove('opacity-75');
-                btn.classList.add('opacity-100');
+                // Change to check icon
+                icon.className = 'fa-solid fa-check text-success';
                 
                 // Add rubberBand bounce effect
                 btn.classList.add('animate__animated', 'animate__rubberBand');
@@ -673,8 +731,7 @@ function copyTotalToClipboard() {
                 // Reset after 1.5 seconds
                 setTimeout(() => {
                     icon.className = 'fa-regular fa-copy';
-                    btn.classList.remove('animate__animated', 'animate__rubberBand', 'opacity-100');
-                    btn.classList.add('opacity-75');
+                    btn.classList.remove('animate__animated', 'animate__rubberBand');
                 }, 1500);
             }
         }
