@@ -158,6 +158,16 @@ input[type=number] {
     }
 }
 
+/* Ensure list items don't overlap dropdowns */
+.list-item-row {
+    position: relative;
+    z-index: 0;
+}
+
+.dropdown-menu {
+    z-index: 1055 !important;
+}
+
 /* Copiar Total button: filled grey on mobile, outlined on desktop */
 .btn-copy-adaptive {
     color: var(--bs-secondary-color);
